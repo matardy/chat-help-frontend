@@ -14,28 +14,39 @@
       </div>
     </main>
     <div class="input-area">
-      <input v-model="newMessage" class="message-input" placeholder="Type a message" />
+      <textarea v-model="newMessage" class="message-input" placeholder="Type a message" rows="1"></textarea>
       <button @click="sendMessage" class="send-button">Send</button>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref } from 'vue';
+import { sendMessageToBot } from '../services/apiService';
 
 export default {
   setup() {
     const newMessage = ref('')
     const messages = ref([])
 
-    const sendMessage = () => {
-      if (newMessage.value.trim()) {
-        messages.value.push({ text: newMessage.value, isUser: true })
-        newMessage.value = '' // Clear the input
-        // Simulate a bot response
-        setTimeout(() => messages.value.push({ text: 'Bot is working', isUser: false }), 500)
+    const sendMessage = async () => {
+      // delete messages first
+      newMessage.value = '';
+
+      const trimmedMessage = newMessage.value.trim();
+      if (trimmedMessage) {
+        messages.value.push({ text: trimmedMessage ,isUser: true});
+
+        try {
+            const botResponse = await sendMessageToBot(trimmedMessage);
+            messages.value.push({ text: botResponse.response, isUser: false }); 
+        } catch (error) {
+            messages.value.push({ text: 'Error al conectar con el bot', isUser: false });
+        }
+        
+        
       }
-    }
+    };
 
     return { newMessage, messages, sendMessage }
   }
@@ -70,22 +81,25 @@ export default {
   padding: 10px 15px;
   margin: 10px 0;
   border-radius: 18px;
-  max-width: 80%;
+  word-wrap: break-word; /* Ensures text wraps to prevent overflow */
+  max-width: 80%; /* Restrict maximum width */
+  min-width: 20%; /* Minimum width for very short messages */
 }
 
-.user {
+.user, .bot {
   background-color: #e5e7eb;
-  margin-right: 0;
-  margin-left: auto;
+  float: right; /* Aligns user messages to the right */
+  color: #333; /* Text color for better readability */
 }
 
 .bot {
   background-color: #d1d5db;
-  margin-left: 0;
-  margin-right: auto;
+  float: left; /* Aligns bot messages to the left */
+  color: #333;
 }
 
 .input-area {
+  height: 10%;
   display: flex;
   padding: 10px;
   background-color: #f3f4f6;
@@ -98,7 +112,10 @@ export default {
   border-radius: 18px;
   margin-right: 10px;
   outline: none;
+  resize: none; /* Prevent manual resizing */
+  overflow: hidden;
 }
+
 
 .send-button {
   padding: 10px 20px;

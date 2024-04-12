@@ -6,7 +6,7 @@ async function sendMessageToBot(message){
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ "message":  message })
     }); 
 
     if (!response.ok){
