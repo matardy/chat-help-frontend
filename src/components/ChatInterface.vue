@@ -8,13 +8,20 @@
         class="message"
         :class="{ user: msg.isUser, bot: !msg.isUser }"
         v-for="(msg, index) in messages"
-        :key="index"
-      >
-        <p>{{ msg.text }}</p>
+        :key="index" >
+
+        <p v-html="formatMessage(msg.text)"></p>
+
       </div>
     </main>
     <div class="input-area">
-      <textarea v-model="newMessage" class="message-input" placeholder="Type a message" rows="1"></textarea>
+      <textarea 
+        v-model="newMessage" 
+        class="message-input" 
+        placeholder="Type a message" 
+        rows="1"
+        @keyup.enter.prevent="handleEnter" 
+        ></textarea>
       <button @click="sendMessage" class="send-button">Send</button>
     </div>
   </div>
@@ -24,19 +31,30 @@
 import { ref } from 'vue';
 import { sendMessageToBot } from '../services/apiService';
 
+
+
+
 export default {
   setup() {
     const newMessage = ref('')
     const messages = ref([])
 
+    const formatMessage = (text) => {
+      // Replace markdown-like bold syntax with HTML <strong> tags
+      let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      // Replace newlines with HTML <br> tags
+      formattedText = formattedText.replace(/\n/g, '<br>');
+      return formattedText;
+    };
+
     const sendMessage = async () => {
       // delete messages first
-      newMessage.value = '';
 
       const trimmedMessage = newMessage.value.trim();
       if (trimmedMessage) {
         messages.value.push({ text: trimmedMessage ,isUser: true});
-
+        newMessage.value = '';
+        
         try {
             const botResponse = await sendMessageToBot(trimmedMessage);
             messages.value.push({ text: botResponse.response, isUser: false }); 
@@ -48,7 +66,19 @@ export default {
       }
     };
 
-    return { newMessage, messages, sendMessage }
+    // Handle shift+enter 
+    const handleEnter = (event) => {
+      if (event.shiftKey) {
+        // Allow Shift+Enter to insert a new line without sending the message
+        event.preventDefault();
+      } else {
+        // Prevent the default enter behavior and send the message
+        event.preventDefault();
+        sendMessage();
+      }
+    };
+
+    return { newMessage, messages, sendMessage, handleEnter, formatMessage}
   }
 }
 </script>
