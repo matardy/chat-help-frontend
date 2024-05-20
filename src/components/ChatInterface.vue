@@ -1,9 +1,11 @@
 <template>
   <div class="chat-container">
+    <ContextModal :currentMessage="currentMessage" :context="modalContext" :visible="isModalVisible"  @update:visible="isModalVisible = $event" />
     <header class="header">
       <h1>Asistente Legal - ChatBot</h1>
     </header>
     <main class="chat-display">
+      
       <div
         class="message"
         :class="{ user: msg.isUser, bot: !msg.isUser }"
@@ -11,6 +13,11 @@
         :key="index" >
 
         <p v-html="formatMessage(msg.text)"></p>
+        <!-- Place the "Ver mas" link and document reference at the button of the chat bubble-->
+        <div class="context-link" v-if="msg.context && msg.context.length">
+        <span>{{ msg.context[0].source.split('/').pop() }} - página {{ msg.context[0].page }}</span>
+        <a href="#" @click="showModal(index)">Ver más</a>
+        </div>
 
       </div>
     </main>
@@ -25,19 +32,35 @@
       <button @click="sendMessage" class="send-button">Send</button>
     </div>
   </div>
+  
 </template>
 
 <script>
 import { ref } from 'vue';
 import { sendMessageToBot } from '../services/apiService';
-
-
-
+import ContextModal from './ContextModal.vue';
 
 export default {
+  components: {
+    ContextModal
+  },
   setup() {
     const newMessage = ref('')
     const messages = ref([])
+
+    const isModalVisible = ref(false); 
+    const modalContext = ref([]); 
+    const currentMessage = ref('')
+
+    const showModal = (messageIndex) => {
+      modalContext.value = messages.value[messageIndex].context;
+      currentMessage.value = messages.value[messageIndex].text
+      isModalVisible.value = true; 
+    };
+
+    const closeModal = () => {
+      isModalVisible.value = false;
+    };
 
     const formatMessage = (text) => {
       // Replace markdown-like bold syntax with HTML <strong> tags
@@ -57,7 +80,9 @@ export default {
         
         try {
             const botResponse = await sendMessageToBot(trimmedMessage);
-            messages.value.push({ text: botResponse.response, isUser: false }); 
+            console.log("Response: ", botResponse.response.answer)
+            console.log("COntext: ", botResponse.response.context)
+            messages.value.push({ text: botResponse.response.answer, isUser: false, context: botResponse.response.context }); 
         } catch (error) {
             messages.value.push({ text: 'Error al conectar con el bot', isUser: false });
         }
@@ -78,7 +103,7 @@ export default {
       }
     };
 
-    return { newMessage, messages, sendMessage, handleEnter, formatMessage}
+    return { newMessage, messages, sendMessage, handleEnter, formatMessage, showModal, isModalVisible, modalContext, closeModal, currentMessage};
   }
 }
 </script>
@@ -162,5 +187,20 @@ export default {
 
 .send-button:active {
   background-color: #397d35;
+}
+
+/* context styles */
+.context-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px; /* Spacing from the main text */ 
+  font-size: 0.75rem /* Smaller texto for the context reference */ 
+}
+
+.context link a {
+  cursor: pointer;
+  text-decoration: underline; 
+  color: #0066cc; /* Styling for link */
 }
 </style>
