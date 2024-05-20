@@ -2,7 +2,10 @@
   <div v-if="visible" class="modal-overlay" @click.self="closeModal">
     <div class="modal-window">
       <div class="modal-header">
-        <button class="close-button ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full" @click="closeModal">
+        <button
+          class="close-button ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full"
+          @click="closeModal"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -28,8 +31,13 @@
       </div>
       <div class="modal-body">
         <div v-for="(content, index) in context" :key="index">
-          <h3>Page {{ content.page }}</h3>
+          <span class="flex items-center">
+            <span class="h-px flex-1 bg-black"></span>
+            <a class="shrink-0 px-6 bg-blue-200 rounded-full">Página {{ content.page }}</a>
+            <span class="h-px flex-1 bg-black"></span>
+          </span>
           <p>{{ content.page_content }}</p>
+          <br />
         </div>
       </div>
     </div>
