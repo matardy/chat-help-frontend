@@ -33,7 +33,7 @@
         <div v-for="(content, index) in context" :key="index">
           <span class="flex items-center">
             <span class="h-px flex-1 bg-black"></span>
-            <a class="shrink-0 px-6 bg-blue-200 rounded-full">Página {{ content.page }}</a>
+            <a class="shrink-0 px-6 bg-blue-200 rounded-full" :href="`${content.source}#page=${content.page+1}`">Página {{ content.page }}</a>
             <span class="h-px flex-1 bg-black"></span>
           </span>
           <p>{{ content.page_content }}</p>
@@ -106,7 +106,7 @@ export default {
 
 .message {
   background-color: #e5e7eb;
-  padding: 10px;
+  padding: 15px;
   border-radius: 18px;
   word-wrap: break-word;
   margin-bottom: 10px; /* Espacio antes del contenido desplazable */
