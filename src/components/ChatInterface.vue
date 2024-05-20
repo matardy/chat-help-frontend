@@ -1,5 +1,11 @@
 <template>
   <div class="chat-container">
+    <ContextModal
+      :currentMessage="currentMessage"
+      :context="modalContext"
+      :visible="isModalVisible"
+      @update:visible="isModalVisible = $event"
+    />
     <header class="header">
       <h1 class="text-2xl">Asistente Legal - ChatBot</h1>
     </header>
@@ -12,21 +18,28 @@
         :key="index"
       >
         <p v-html="formatMessage(msg.text)"></p>
+        <!-- Place the "Ver mas" link and document reference at the button of the chat bubble-->
+        <div class="context-link" v-if="msg.context && msg.context.length">
+          <span
+            >{{ msg.context[0].source.split('/').pop() }} - página {{ msg.context[0].page }}</span
+          >
+          <a class="ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full" href="#" @click="showModal(index)">Ver más</a>
+        </div>
       </div>
     </main>
-    <!-- BUTTON -->
+    <!-- INPUT AREA -->
     <div class="flex px-4 py-2 bg-gray-100 border-t">
-      <input
-        type="text"
-        class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <textarea
+        @input="adjustTextarea"
+        class="w-full p-2 rounded-lg overflow-hidden resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border"
         placeholder="Escribe tu mensaje..."
-        v-model="newMessage"
         rows="1"
+        v-model="newMessage"
         @keyup.enter.prevent="handleEnter"
-      />
+      ></textarea>
       <button
         @click="sendMessage"
-        class="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        class="ml-2 p-2 text-blue-500 hover:bg-blue-200 transition-colors duration-300 rounded-full"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -54,11 +67,29 @@
 <script>
 import { ref } from 'vue'
 import { sendMessageToBot } from '../services/apiService'
+import ContextModal from './ContextModal.vue'
 
 export default {
+  components: {
+    ContextModal
+  },
   setup() {
     const newMessage = ref('')
     const messages = ref([])
+
+    const isModalVisible = ref(false)
+    const modalContext = ref([])
+    const currentMessage = ref('')
+
+    const showModal = (messageIndex) => {
+      modalContext.value = messages.value[messageIndex].context
+      currentMessage.value = messages.value[messageIndex].text
+      isModalVisible.value = true
+    }
+
+    const closeModal = () => {
+      isModalVisible.value = false
+    }
 
     const formatMessage = (text) => {
       if (typeof text !== 'string') {
@@ -81,7 +112,11 @@ export default {
 
         try {
           const botResponse = await sendMessageToBot(trimmedMessage)
-          messages.value.push({ text: botResponse.response.answer, isUser: false })
+          messages.value.push({
+            text: botResponse.response.answer,
+            isUser: false,
+            context: botResponse.response.context
+          })
         } catch (error) {
           messages.value.push({ text: 'Error al conectar con el bot', isUser: false })
         }
@@ -100,7 +135,28 @@ export default {
       }
     }
 
-    return { newMessage, messages, sendMessage, handleEnter, formatMessage }
+    return {
+      newMessage,
+      messages,
+      sendMessage,
+      handleEnter,
+      formatMessage,
+      showModal,
+      isModalVisible,
+      modalContext,
+      closeModal,
+      currentMessage
+    }
+  },
+  methods: {
+    adjustTextarea(event) {
+      const textarea = event.target
+      textarea.style.height = 'auto'
+      textarea.style.height =
+        textarea.scrollHeight <= 5 * parseFloat(getComputedStyle(textarea).lineHeight)
+          ? textarea.scrollHeight + 'px'
+          : 5 * parseFloat(getComputedStyle(textarea).lineHeight) + 'px'
+    }
   }
 }
 </script>
@@ -135,14 +191,14 @@ export default {
   border-radius: 18px;
   word-wrap: break-word; /* Ensures text wraps to prevent overflow */
   max-width: 80%; /* Restrict maximum width */
-  min-width: 20%; /* Minimum width for very short messages */
+  min-width: 5%; /* Minimum width for very short messages */
 }
 
-.user,
-.bot {
-  background-color: #e5e7eb;
-  float: right; /* Aligns user messages to the right */
-  color: #333; /* Text color for better readability */
+.user {
+  background-color: #bfdbfe;
+  text-align: end;
+  float: right; 
+  color: #333;
 }
 
 .bot {
@@ -184,5 +240,20 @@ export default {
 
 .send-button:active {
   background-color: #397d35;
+}
+
+/* context styles */
+.context-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px; /* Spacing from the main text */
+  font-size: 0.75rem; /* Smaller texto for the context reference */
+}
+
+.context link a {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #0066cc; /* Styling for link */
 }
 </style>
