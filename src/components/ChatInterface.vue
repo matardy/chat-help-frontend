@@ -1,38 +1,59 @@
 <template>
   <div class="chat-container">
     <header class="header">
-      <h1>Asistente Legal - ChatBot</h1>
+      <h1 class="text-2xl">Asistente Legal - ChatBot</h1>
     </header>
+    <!-- MESSAGES -->
     <main class="chat-display">
       <div
-        class="message"
+        class="message bg-blue-500 text-white p-2 rounded-lg max-w-xs"
         :class="{ user: msg.isUser, bot: !msg.isUser }"
         v-for="(msg, index) in messages"
-        :key="index" >
-
+        :key="index"
+      >
         <p v-html="formatMessage(msg.text)"></p>
-
       </div>
     </main>
-    <div class="input-area">
-      <textarea 
-        v-model="newMessage" 
-        class="message-input" 
-        placeholder="Type a message" 
+    <!-- BUTTON -->
+    <div class="flex px-4 py-2 bg-gray-100 border-t">
+      <input
+        type="text"
+        class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Escribe tu mensaje..."
+        v-model="newMessage"
         rows="1"
-        @keyup.enter.prevent="handleEnter" 
-        ></textarea>
-      <button @click="sendMessage" class="send-button">Send</button>
+        @keyup.enter.prevent="handleEnter"
+      />
+      <button
+        @click="sendMessage"
+        class="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-send-2"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z"
+          />
+          <path d="M6.5 12h14.5" />
+        </svg>
+      </button>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { sendMessageToBot } from '../services/apiService';
-
-
-
+import { ref } from 'vue'
+import { sendMessageToBot } from '../services/apiService'
 
 export default {
   setup() {
@@ -40,45 +61,46 @@ export default {
     const messages = ref([])
 
     const formatMessage = (text) => {
+      if (typeof text !== 'string') {
+        return text
+      }
       // Replace markdown-like bold syntax with HTML <strong> tags
-      let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       // Replace newlines with HTML <br> tags
-      formattedText = formattedText.replace(/\n/g, '<br>');
-      return formattedText;
-    };
+      formattedText = formattedText.replace(/\n/g, '<br>')
+      return formattedText
+    }
 
     const sendMessage = async () => {
       // delete messages first
 
-      const trimmedMessage = newMessage.value.trim();
+      const trimmedMessage = newMessage.value.trim()
       if (trimmedMessage) {
-        messages.value.push({ text: trimmedMessage ,isUser: true});
-        newMessage.value = '';
-        
-        try {
-            const botResponse = await sendMessageToBot(trimmedMessage);
-            messages.value.push({ text: botResponse.response, isUser: false }); 
-        } catch (error) {
-            messages.value.push({ text: 'Error al conectar con el bot', isUser: false });
-        }
-        
-        
-      }
-    };
+        messages.value.push({ text: trimmedMessage, isUser: true })
+        newMessage.value = ''
 
-    // Handle shift+enter 
+        try {
+          const botResponse = await sendMessageToBot(trimmedMessage)
+          messages.value.push({ text: botResponse.response.answer, isUser: false })
+        } catch (error) {
+          messages.value.push({ text: 'Error al conectar con el bot', isUser: false })
+        }
+      }
+    }
+
+    // Handle shift+enter
     const handleEnter = (event) => {
       if (event.shiftKey) {
         // Allow Shift+Enter to insert a new line without sending the message
-        event.preventDefault();
+        event.preventDefault()
       } else {
         // Prevent the default enter behavior and send the message
-        event.preventDefault();
-        sendMessage();
+        event.preventDefault()
+        sendMessage()
       }
-    };
+    }
 
-    return { newMessage, messages, sendMessage, handleEnter, formatMessage}
+    return { newMessage, messages, sendMessage, handleEnter, formatMessage }
   }
 }
 </script>
@@ -116,7 +138,8 @@ export default {
   min-width: 20%; /* Minimum width for very short messages */
 }
 
-.user, .bot {
+.user,
+.bot {
   background-color: #e5e7eb;
   float: right; /* Aligns user messages to the right */
   color: #333; /* Text color for better readability */
@@ -145,7 +168,6 @@ export default {
   resize: none; /* Prevent manual resizing */
   overflow: hidden;
 }
-
 
 .send-button {
   padding: 10px 20px;
