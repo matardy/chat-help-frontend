@@ -17,13 +17,19 @@
         v-for="(msg, index) in messages"
         :key="index"
       >
-        <p v-html="formatMessage(msg.text)"></p>
+        <p v-if="!msg.isLoader" v-html="formatMessage(msg.text)"></p>
+        <div v-if="msg.isLoader" class="loader"></div>
         <!-- Place the "Ver mas" link and document reference at the button of the chat bubble-->
         <div class="context-link" v-if="msg.context && msg.context.length">
           <span
             >{{ msg.context[0].source.split('/').pop() }} - página {{ msg.context[0].page }}</span
           >
-          <a class="ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full" href="#" @click="showModal(index)">Ver más</a>
+          <a
+            class="ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full"
+            href="#"
+            @click="showModal(index)"
+            >Ver más</a
+          >
         </div>
       </div>
     </main>
@@ -81,6 +87,8 @@ export default {
     const modalContext = ref([])
     const currentMessage = ref('')
 
+    const isLoading = ref(false)
+
     const showModal = (messageIndex) => {
       modalContext.value = messages.value[messageIndex].context
       currentMessage.value = messages.value[messageIndex].text
@@ -103,23 +111,35 @@ export default {
     }
 
     const sendMessage = async () => {
-      // delete messages first
-
       const trimmedMessage = newMessage.value.trim()
       if (trimmedMessage) {
         messages.value.push({ text: trimmedMessage, isUser: true })
         newMessage.value = ''
 
+        isLoading.value = true
+        messages.value.push({ text: '', isUser: false, isLoader: true })
+
         try {
           const botResponse = await sendMessageToBot(trimmedMessage)
-          messages.value.push({
+
+          replaceLoaderWithMessage({
             text: botResponse.response.answer,
             isUser: false,
             context: botResponse.response.context
           })
         } catch (error) {
-          messages.value.push({ text: 'Error al conectar con el bot', isUser: false })
+          replaceLoaderWithMessage({ text: 'Error al conectar con el bot', isUser: false })
+        } finally {
+          isLoading.value = false
         }
+      }
+    }
+
+    const replaceLoaderWithMessage = (newMessage) => {
+      const loaderIndex = messages.value.findIndex((msg) => msg.isLoader)
+
+      if (loaderIndex !== -1) {
+        messages.value.splice(loaderIndex, 1, newMessage)
       }
     }
 
@@ -145,7 +165,8 @@ export default {
       isModalVisible,
       modalContext,
       closeModal,
-      currentMessage
+      currentMessage,
+      isLoading
     }
   },
   methods: {
@@ -197,7 +218,7 @@ export default {
 .user {
   background-color: #bfdbfe;
   text-align: end;
-  float: right; 
+  float: right;
   color: #333;
 }
 
@@ -255,5 +276,43 @@ export default {
   cursor: pointer;
   text-decoration: underline;
   color: #0066cc; /* Styling for link */
+}
+
+.loader {
+  width: 30px;
+  aspect-ratio: 2;
+  --_g: no-repeat radial-gradient(circle closest-side, #0066cc 90%, #0000);
+  background:
+    var(--_g) 0% 50%,
+    var(--_g) 50% 50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100% / 3) 50%;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {
+  20% {
+    background-position:
+      0% 0%,
+      50% 50%,
+      100% 50%;
+  }
+  40% {
+    background-position:
+      0% 100%,
+      50% 0%,
+      100% 50%;
+  }
+  60% {
+    background-position:
+      0% 50%,
+      50% 100%,
+      100% 0%;
+  }
+  80% {
+    background-position:
+      0% 50%,
+      50% 50%,
+      100% 100%;
+  }
 }
 </style>
