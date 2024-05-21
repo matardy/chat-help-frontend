@@ -1,4 +1,5 @@
 <template>
+  <title>Hola</title>
   <div class="chat-container">
     <ContextModal
       :currentMessage="currentMessage"
@@ -10,62 +11,64 @@
       <h1 class="text-2xl">Asistente Legal - ChatBot</h1>
     </header>
     <!-- MESSAGES -->
-    <main class="chat-display">
-      <div
-        class="message bg-blue-500 text-white p-2 rounded-lg max-w-xs"
-        :class="{ user: msg.isUser, bot: !msg.isUser }"
-        v-for="(msg, index) in messages"
-        :key="index"
-      >
-        <p v-if="!msg.isLoader" v-html="formatMessage(msg.text)"></p>
-        <div v-if="msg.isLoader" class="loader"></div>
-        <!-- Place the "Ver mas" link and document reference at the button of the chat bubble-->
-        <div class="context-link" v-if="msg.context && msg.context.length">
-          <span
-            >{{ msg.context[0].source.split('/').pop() }} - página {{ msg.context[0].page }}</span
-          >
-          <a
-            class="ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full"
-            href="#"
-            @click="showModal(index)"
-            >Ver más</a
-          >
-        </div>
-      </div>
-    </main>
-    <!-- INPUT AREA -->
-    <div class="flex px-4 py-2 bg-gray-100 border-t">
-      <textarea
-        @input="adjustTextarea"
-        class="w-full p-2 rounded-lg overflow-hidden resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border"
-        placeholder="Escribe tu mensaje..."
-        rows="1"
-        v-model="newMessage"
-        @keyup.enter.prevent="handleEnter"
-      ></textarea>
-      <button
-        @click="sendMessage"
-        class="ml-2 p-2 text-blue-500 hover:bg-blue-200 transition-colors duration-300 rounded-full"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="icon icon-tabler icons-tabler-outline icon-tabler-send-2"
+    <div class="chat-container w-full max-w-3xl mx-auto overflow-hidden">
+      <main class="chat-display p-4 flex-1 overflow-y-auto no-scrollbar">
+        <div
+          class="message bg-blue-500 text-white p-2 rounded-lg max-w-xs"
+          :class="{ user: msg.isUser, bot: !msg.isUser }"
+          v-for="(msg, index) in messages"
+          :key="index"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path
-            d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z"
-          />
-          <path d="M6.5 12h14.5" />
-        </svg>
-      </button>
+          <p v-if="!msg.isLoader" v-html="formatMessage(msg.text)"></p>
+          <div v-if="msg.isLoader" class="loader"></div>
+          <!-- Place the "Ver mas" link and document reference at the button of the chat bubble-->
+          <div class="context-link" v-if="msg.context && msg.context.length">
+            <span
+              >{{ msg.context[0].source.split('/').pop() }} - página {{ msg.context[0].page }}</span
+            >
+            <a
+              class="ml-2 p-2 bg-blue-200 hover:bg-blue-300 transition-colors duration-300 rounded-full"
+              href="#"
+              @click="showModal(index)"
+              >Ver más</a
+            >
+          </div>
+        </div>
+      </main>
+      <!-- INPUT AREA -->
+      <div class="flex px-4 py-2">
+        <textarea
+          @input="adjustTextarea"
+          class="w-full p-2 rounded-lg overflow-hidden resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border"
+          placeholder="Escribe tu mensaje..."
+          rows="1"
+          v-model="newMessage"
+          @keyup.enter.prevent="handleEnter"
+        ></textarea>
+        <button
+          @click="sendMessage"
+          class="ml-2 p-2 text-blue-500 hover:bg-blue-200 transition-colors duration-300 rounded-full"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-send-2"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z"
+            />
+            <path d="M6.5 12h14.5" />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -125,10 +128,13 @@ export default {
           replaceLoaderWithMessage({
             text: botResponse.response.answer,
             isUser: false,
-            context: botResponse.response.context
+            context: botResponse.response.context,
           })
         } catch (error) {
-          replaceLoaderWithMessage({ text: 'Error al conectar con el bot', isUser: false })
+          replaceLoaderWithMessage({
+            text: 'Error al conectar con el bot',
+            isUser: false,
+          })
         } finally {
           isLoading.value = false
         }
@@ -178,6 +184,9 @@ export default {
           ? textarea.scrollHeight + 'px'
           : 5 * parseFloat(getComputedStyle(textarea).lineHeight) + 'px'
     }
+  },
+  mounted() {
+    document.title = 'Asistente Legal - ChatBot'
   }
 }
 </script>
@@ -192,10 +201,11 @@ export default {
 }
 
 .header {
-  background-color: #f3f4f6;
+  /* background-color: #f3f4f6; */
+  color: #878a8e;
   padding: 1rem;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
 }
 
 .chat-display {
@@ -314,5 +324,14 @@ export default {
       50% 50%,
       100% 100%;
   }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 </style>
