@@ -1,4 +1,4 @@
-const BASE_URL = 'http://54.226.248.161:8001';
+const BASE_URL = 'http://54.210.125.13:8001';
 
 async function startConversation() {
     const userId = 123;
