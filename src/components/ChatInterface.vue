@@ -8,7 +8,7 @@
       @update:visible="isModalVisible = $event"
     />
     <header class="header">
-      <h1 class="text-2xl">Asistente Legal - ChatBot</h1>
+      <h1 class="text-2xl">Asistente Personal AWS - ChatBot</h1>
     </header>
     <!-- MESSAGES -->
     <div class="chat-container w-full max-w-3xl mx-auto overflow-hidden">
@@ -124,11 +124,11 @@ export default {
 
         try {
           const botResponse = await sendMessageToBot(trimmedMessage)
-
+          console.log(`respuesta del bot: ${JSON.stringify(botResponse)}`)
           replaceLoaderWithMessage({
-            text: botResponse.response.answer,
+            text: botResponse.output,
             isUser: false,
-            context: botResponse.response.context,
+            context: [],
           })
         } catch (error) {
           replaceLoaderWithMessage({
@@ -186,7 +186,7 @@ export default {
     }
   },
   mounted() {
-    document.title = 'Asistente Legal - ChatBot'
+    document.title = 'Asistente Personal'
   }
 }
 </script>
