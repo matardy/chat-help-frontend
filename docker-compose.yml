@@ -6,6 +6,8 @@ services:
       - "80:80"
     networks:
       - webnet
+    volumes:
+      - ./:/app
 
 networks:
   webnet:
