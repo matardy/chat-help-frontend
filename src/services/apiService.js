@@ -1,4 +1,4 @@
-const BASE_URL = 'http://18.205.240.131:8001';
+const BASE_URL = `${import.meta.env.VITE_BACK_URL}:8001`;
 
 async function startConversation() {
     const userId = 123;
