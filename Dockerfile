@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala las dependencias y el aws-sdk
-RUN npm install && npm install aws-sdk
+RUN npm ci && npm install aws-sdk
 
 # Copia el resto del código de la aplicación
 COPY . .
