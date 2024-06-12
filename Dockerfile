@@ -7,8 +7,8 @@ WORKDIR /app
 # Copia el package.json y el package-lock.json al directorio de trabajo
 COPY package*.json ./
 
-# Instala las dependencias
-RUN npm install
+# Instala las dependencias y el aws-sdk
+RUN npm install && npm install aws-sdk
 
 # Copia el resto del código de la aplicación
 COPY . .
