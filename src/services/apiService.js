@@ -1,25 +1,27 @@
 const BASE_URL = `${import.meta.env.VITE_BACK_URL}:8001`;
+console.log(import.meta.env.VITE_BACK_URL)
+console.log(`BASE_URL: ${BASE_URL}`)
 
-async function startConversation() {
-    const userId = 123;
-    const conversationResponse = await fetch(`${BASE_URL}/chat/conversation/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId })
-    });
+// async function startConversation() {
+//     const userId = 1;
+//     const conversationResponse = await fetch(`${BASE_URL}/chat/conversation/`, {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({ user_id: userId })
+//     });
 
-    if (!conversationResponse.ok) {
-        throw new Error('Failed to start conversation: ' + conversationResponse.statusText);
-    }
+//     if (!conversationResponse.ok) {
+//         throw new Error('Failed to start conversation: ' + conversationResponse.statusText);
+//     }
 
-    const { id: conversationId } = await conversationResponse.json();
-    return conversationId;
-}
+//     const { id: conversationId } = await conversationResponse.json();
+//     return conversationId;
+// }
 
 async function sendMessageToBot(message) {
-    const conversationId = 2;
+    const conversationId = 1;
 
     const response = await fetch(`${BASE_URL}/chat/message?session_id=123&conversation_id=${conversationId}`, {
         method: 'POST',
